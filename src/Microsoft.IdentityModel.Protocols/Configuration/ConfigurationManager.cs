@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -150,15 +151,23 @@ namespace Microsoft.IdentityModel.Protocols
                     catch (Exception ex)
                     {
                         _fetchMetadataFailure = ex;
-                        _syncAfter = DateTimeUtil.Add(now.UtcDateTime, AutomaticRefreshInterval < RefreshInterval ? AutomaticRefreshInterval : RefreshInterval);
-                        if (_currentConfiguration == null) // Throw an exception if there's no configuration to return.
+
+                        if (_currentConfiguration == null)
+                        {
+                            _syncAfter = DateTimeUtil.Add(now.UtcDateTime, new[] { AutomaticRefreshInterval, RefreshInterval, BootstrapRefreshInterval }.Min());
+
+                            // Throw an exception if there's no configuration to return.
                             throw LogHelper.LogExceptionMessage(
                                 new InvalidOperationException(
                                     LogHelper.FormatInvariant(LogMessages.IDX20803, LogHelper.MarkAsNonPII(MetadataAddress ?? "null"), LogHelper.MarkAsNonPII(ex)), ex));
+                        }
                         else
+                        {
+                            _syncAfter = DateTimeUtil.Add(now.UtcDateTime, AutomaticRefreshInterval < RefreshInterval ? AutomaticRefreshInterval : RefreshInterval);
                             LogHelper.LogExceptionMessage(
                                 new InvalidOperationException(
                                     LogHelper.FormatInvariant(LogMessages.IDX20806, LogHelper.MarkAsNonPII(MetadataAddress ?? "null"), LogHelper.MarkAsNonPII(ex)), ex));
+                        }
                     }
                 }
 
