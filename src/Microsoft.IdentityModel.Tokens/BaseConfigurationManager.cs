@@ -53,7 +53,7 @@ namespace Microsoft.IdentityModel.Tokens
         /// <summary>
         /// 30 seconds is the time interval that must pass for <see cref="RequestRefresh"/> before obtain the first configuration.
         /// </summary>
-        public TimeSpan BootstrapRefreshInterval { get; } = new TimeSpan(0, 0, 30, 0);
+        public TimeSpan BootstrapRefreshInterval { get; } = new TimeSpan(0, 0, 30);
 
         /// <summary>
         /// Obtains an updated version of <see cref="BaseConfiguration"/> if the appropriate refresh interval has passed.

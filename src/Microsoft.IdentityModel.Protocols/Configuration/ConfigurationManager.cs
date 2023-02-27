@@ -159,14 +159,14 @@ namespace Microsoft.IdentityModel.Protocols
                             // Throw an exception if there's no configuration to return.
                             throw LogHelper.LogExceptionMessage(
                                 new InvalidOperationException(
-                                    LogHelper.FormatInvariant(LogMessages.IDX20803, LogHelper.MarkAsNonPII(MetadataAddress ?? "null"), LogHelper.MarkAsNonPII(ex)), ex));
+                                    LogHelper.FormatInvariant(LogMessages.IDX20803, LogHelper.MarkAsNonPII(MetadataAddress ?? Utility.Null), LogHelper.MarkAsNonPII(ex)), ex));
                         }
                         else
                         {
                             _syncAfter = DateTimeUtil.Add(now.UtcDateTime, AutomaticRefreshInterval < RefreshInterval ? AutomaticRefreshInterval : RefreshInterval);
                             LogHelper.LogExceptionMessage(
                                 new InvalidOperationException(
-                                    LogHelper.FormatInvariant(LogMessages.IDX20806, LogHelper.MarkAsNonPII(MetadataAddress ?? "null"), LogHelper.MarkAsNonPII(ex)), ex));
+                                    LogHelper.FormatInvariant(LogMessages.IDX20806, LogHelper.MarkAsNonPII(MetadataAddress ?? Utility.Null), LogHelper.MarkAsNonPII(ex)), ex));
                         }
                     }
                 }
@@ -177,7 +177,7 @@ namespace Microsoft.IdentityModel.Protocols
                 else
                     throw LogHelper.LogExceptionMessage(
                         new InvalidOperationException(
-                            LogHelper.FormatInvariant(LogMessages.IDX20803, LogHelper.MarkAsNonPII(MetadataAddress ?? "null"), LogHelper.MarkAsNonPII(_fetchMetadataFailure)), _fetchMetadataFailure));
+                            LogHelper.FormatInvariant(LogMessages.IDX20803, LogHelper.MarkAsNonPII(MetadataAddress ?? Utility.Null), LogHelper.MarkAsNonPII(_fetchMetadataFailure)), _fetchMetadataFailure));
             }
             finally
             {
