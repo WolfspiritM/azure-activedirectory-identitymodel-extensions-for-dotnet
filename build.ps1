@@ -6,8 +6,8 @@ param(
     [string]$runTests="YES",
     [string]$failBuildOnTest="YES",
     [string]$slnFile="wilson.sln",
+    [string]$verifyResources="YES",
     [switch]$runApiCompat,
-    [string]$verifyResources="YES"
     [switch]$generateContractAssemblies)
 
 ################################################# Functions ############################################################
