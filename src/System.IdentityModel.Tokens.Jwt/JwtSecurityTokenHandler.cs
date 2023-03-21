@@ -1398,7 +1398,7 @@ namespace System.IdentityModel.Tokens.Jwt
 
                 if (!validationParameters.ValidateSignatureLast)
                 {
-                    InternalValidators.ValidateLifetimeAndIssuerAfterSignatureNotValidatedJwt(
+                    InternalValidators.ValidateLifetimeAndIssuerAfterSignatureFailed(
                         jwtToken,
                         notBefore,
                         expires,

@@ -17,12 +17,10 @@ namespace Microsoft.IdentityModel.Tokens
         /// Called after signature validation has failed. Will always throw an exception.
         /// </summary>
         /// <exception cref="SecurityTokenSignatureKeyNotFoundException">
-        /// If the lifetime and issuer are valid
+        /// If the lifetime and issuer are valid otherwise
+        /// the exception returned from ValidateLifetime and ValidateIssuer.
         /// </exception>
-        /// <exception cref="SecurityTokenUnableToValidateException">
-        /// If the lifetime or issuer are invalid
-        /// </exception>
-        internal static void ValidateLifetimeAndIssuerAfterSignatureNotValidatedJwt(
+        internal static void ValidateLifetimeAndIssuerAfterSignatureFailed(
             SecurityToken securityToken,
             DateTime? notBefore,
             DateTime? expires,
@@ -35,25 +33,29 @@ namespace Microsoft.IdentityModel.Tokens
         {
             bool validIssuer = false;
             bool validLifetime = false;
+            Exception exception = null;
 
             try
             {
                 Validators.ValidateLifetime(notBefore, expires, securityToken, validationParameters);
                 validLifetime = true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // validLifetime will remain false
+                exception = ex;
             }
 
-            try
+            if (exception == null)
             {
-                Validators.ValidateIssuer(securityToken.Issuer, securityToken, validationParameters, configuration);
-                validIssuer = true;
-            }
-            catch (Exception)
-            {
-                // validIssuer will remain false
+                try
+                {
+                    Validators.ValidateIssuer(securityToken.Issuer, securityToken, validationParameters, configuration);
+                    validIssuer = true;
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
             }
 
             if (validLifetime && validIssuer)
@@ -63,79 +65,49 @@ namespace Microsoft.IdentityModel.Tokens
                     LogHelper.MarkAsNonPII(numKeysInConfiguration),
                     exceptionStrings,
                     securityToken)));
-            else
-            {
-                var validationFailure = ValidationFailure.None;
-
-                if (!validLifetime)
-                    validationFailure |= ValidationFailure.InvalidLifetime;
-
-                if (!validIssuer)
-                    validationFailure |= ValidationFailure.InvalidIssuer;
-
-                throw LogHelper.LogExceptionMessage(new SecurityTokenUnableToValidateException(
-                    validationFailure,
-                    LogHelper.FormatInvariant(TokenLogMessages.IDX10516,
-                    LogHelper.MarkAsNonPII(kid),
-                    LogHelper.MarkAsNonPII(numKeysInTokenValidationParameters),
-                    LogHelper.MarkAsNonPII(numKeysInConfiguration),
-                    exceptionStrings,
-                    securityToken,
-                    LogHelper.MarkAsNonPII(validLifetime),
-                    LogHelper.MarkAsNonPII(validIssuer))));
-            }
+            else if (exception != null)
+                throw LogHelper.LogExceptionMessage(exception);
         }
 
         /// <summary>
         /// Called after signature validation has failed. Will always throw an exception.
         /// </summary>
         /// <exception cref="SecurityTokenSignatureKeyNotFoundException">
-        /// If the lifetime and issuer are valid
-        /// </exception>
-        /// <exception cref="SecurityTokenUnableToValidateException">
-        /// If the lifetime or issuer are invalid
+        /// If the lifetime and issuer are valid otherwise
+        /// the exception returned from ValidateLifetime and ValidateIssuer.
         /// </exception>
         internal static void ValidateLifetimeAndIssuerAfterSignatureNotValidatedSaml(SecurityToken securityToken, DateTime? notBefore, DateTime? expires, string keyInfo, TokenValidationParameters validationParameters, StringBuilder exceptionStrings)
         {
             bool validIssuer = false;
             bool validLifetime = false;
-
+            Exception exception = null;
             try
             {
                 Validators.ValidateLifetime(notBefore, expires, securityToken, validationParameters);
                 validLifetime = true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // validLifetime will remain false
+                exception = ex;
             }
 
-            try
+            if (exception == null)
             {
-                Validators.ValidateIssuer(securityToken.Issuer, securityToken, validationParameters);
-                validIssuer = true;
-            }
-            catch (Exception)
-            {
-                // validIssuer will remain false
+                try
+                {
+                    Validators.ValidateIssuer(securityToken.Issuer, securityToken, validationParameters);
+                    validIssuer = true;
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
             }
 
             if (validLifetime && validIssuer)
                 throw LogHelper.LogExceptionMessage(new SecurityTokenSignatureKeyNotFoundException(LogHelper.FormatInvariant(TokenLogMessages.IDX10513, keyInfo, exceptionStrings, securityToken)));
-            else
-            {
-                var validationFailure = ValidationFailure.None;
-
-                if (!validLifetime)
-                    validationFailure |= ValidationFailure.InvalidLifetime;
-
-                if (!validIssuer)
-                    validationFailure |= ValidationFailure.InvalidIssuer;
-
-                throw LogHelper.LogExceptionMessage(new SecurityTokenUnableToValidateException(
-                    validationFailure,
-                    LogHelper.FormatInvariant(TokenLogMessages.IDX10515, keyInfo, exceptionStrings, securityToken, LogHelper.MarkAsNonPII(validLifetime), LogHelper.MarkAsNonPII(validIssuer))));
-            }
+            else if (exception != null)
+                throw LogHelper.LogExceptionMessage(exception);
         }
     }
 }
