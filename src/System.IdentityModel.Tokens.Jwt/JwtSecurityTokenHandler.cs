@@ -1398,16 +1398,13 @@ namespace System.IdentityModel.Tokens.Jwt
 
                 if (!validationParameters.ValidateSignatureLast)
                 {
-                    InternalValidators.ValidateLifetimeAndIssuerAfterSignatureFailed(
+                    InternalValidators.ValidateAfterSignatureFailed(
                         jwtToken,
                         notBefore,
                         expires,
-                        jwtToken.Header.Kid,
+                        jwtToken.Audiences,
                         validationParameters,
-                        configuration,
-                        exceptionStrings,
-                        numKeysInConfiguration,
-                        numKeysInTokenValidationParameters);
+                        configuration);
                 }
             }
 
