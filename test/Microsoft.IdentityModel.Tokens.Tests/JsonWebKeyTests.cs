@@ -3,14 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.IdentityModel.Json;
 using Microsoft.IdentityModel.TestUtils;
 using Xunit;
-
-#pragma warning disable CS3016 // Arrays as attribute arguments is not CLS-compliant
 
 namespace Microsoft.IdentityModel.Tokens.Tests
 {
@@ -24,6 +19,11 @@ namespace Microsoft.IdentityModel.Tokens.Tests
             {
                 var jsonWebKey = new JsonWebKey(json);
                 ee.ProcessNoException(context);
+#if NET6_0
+                JsonWebKeyNet6 jsonWebKeyNet6 = new JsonWebKeyNet6(json);
+                if (compareTo != null)
+                    IdentityComparer.AreEqual(jsonWebKeyNet6, compareTo, context);
+#endif
                 if (compareTo != null)
                     IdentityComparer.AreEqual(jsonWebKey, compareTo, context);
             }
@@ -362,5 +362,3 @@ namespace Microsoft.IdentityModel.Tokens.Tests
         }
     }
 }
-
-#pragma warning restore CS3016 // Arrays as attribute arguments is not CLS-compliant

@@ -69,6 +69,9 @@ namespace Microsoft.IdentityModel.TestUtils
                 { typeof(JObject).ToString(), AreJObjectsEqual },
 #if !CrossVersionTokenValidation
                 { typeof(JsonWebKey).ToString(), CompareAllPublicProperties },
+#if NET6_0
+                { typeof(JsonWebKeyNet6).ToString(), CompareJsonWebKeyNet6 },
+#endif
                 { typeof(JsonWebKeySet).ToString(), CompareAllPublicProperties },
                 { typeof(JsonWebToken).ToString(), CompareAllPublicProperties },
                 { typeof(JsonWebTokenHandler).ToString(), CompareAllPublicProperties },
@@ -965,6 +968,70 @@ namespace Microsoft.IdentityModel.TestUtils
             return (label ?? "label") + ": '" + GetString(str1) + "', '" + GetString(str2) + "'";
         }
 
+#if NET6_0
+        public static bool CompareJsonWebKeyNet6(object obj1, object obj2, CompareContext context)
+        {
+            var localContext = new CompareContext(context) { IgnoreType = true };
+            if (!ContinueCheckingEquality(obj1, obj2, localContext))
+                return context.Merge(localContext);
+
+            var jsonWebKeyNet6 = (JsonWebKeyNet6)obj1;
+            var jsonWebKey = (JsonWebKey)obj2;
+
+            Type jsonWebKeyType = jsonWebKey.GetType();
+            var jsonWebKeyPopertyInfos = jsonWebKeyType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            Type jsonWebKeyNet6Type = jsonWebKeyNet6.GetType();
+            var jsonWebKeyNet6PropertyInfos = jsonWebKeyNet6Type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (PropertyInfo jsonWebKeyPropertyInfo in jsonWebKeyPopertyInfos)
+            {
+                PropertyInfo propertyInfoFound = null;
+                foreach (PropertyInfo jsonWebKeyNet6PropertyInfo in jsonWebKeyNet6PropertyInfos)
+                {
+                    if (jsonWebKeyNet6PropertyInfo.Name == jsonWebKeyPropertyInfo.Name)
+                        propertyInfoFound = jsonWebKeyNet6PropertyInfo;
+                }
+
+                if (propertyInfoFound == null)
+                {
+                    localContext.AddDiff($"jsonWebKeyNet6 property not found: {jsonWebKeyPropertyInfo.Name}");
+                    continue;
+                }
+
+                if (jsonWebKeyPropertyInfo.GetMethod != null)
+                {
+                    var propertyContext = new CompareContext(context);
+
+                    object val1 = jsonWebKeyPropertyInfo.GetValue(jsonWebKey, null);
+                    object val2 = propertyInfoFound.GetValue(jsonWebKeyNet6, null);
+                    if ((val1 == null) && (val2 == null))
+                        continue;
+
+                    if ((val1 == null) || (val2 == null))
+                    {
+                        propertyContext.Diffs.Add($"{jsonWebKeyPropertyInfo.Name}:");
+                        propertyContext.Diffs.Add(BuildStringDiff(propertyInfoFound.Name, val1, val2));
+                    }
+                    else if (val1.GetType().BaseType == typeof(System.ValueType) && !_equalityDict.Keys.Contains(val1.GetType().ToString()))
+                    {
+                        if (!val1.Equals(val2))
+                        {
+                            propertyContext.Diffs.Add($"{jsonWebKeyPropertyInfo.Name}:");
+                            propertyContext.Diffs.Add(BuildStringDiff(propertyInfoFound.Name, val1, val2));
+                        }
+                    }
+                    else
+                    {
+                        AreEqual(val1, val2, propertyContext);
+                        localContext.Merge($"{propertyInfoFound.Name}:", propertyContext);
+                    }
+                }
+            }
+
+            return context.Merge(localContext);
+        }
+#endif
         public static bool CompareAllPublicProperties(object obj1, object obj2, CompareContext context)
         {
             Type type = obj1.GetType();
