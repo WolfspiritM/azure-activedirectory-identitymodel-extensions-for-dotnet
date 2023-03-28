@@ -1,6 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// Copied from https://github.com/dotnet/aspnetcore/blob/d4be4957c24c7c8b745ade4cbaf290ad9cad1ad2/src/Shared/TrimmingAttributes.cs#L17
+// Modified to not use nullable annotations.
+// These attributes are necessary to target TFMs older than net6.0, which don't contain these attribute in the framework.
+
 namespace System.Diagnostics.CodeAnalysis
 {
     /// <summary>
